@@ -1,0 +1,994 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>裂缝先知 道路桥梁智能检测</title>
+    <!-- 字体与图标库 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FDF9F2;  /* 暖米白背景 */
+            background-image: radial-gradient(circle at 10% 20%, rgba(245, 235, 220, 0.6) 2%, transparent 2.5%),
+                              radial-gradient(circle at 80% 70%, rgba(230, 215, 190, 0.4) 1.5%, transparent 2%);
+            background-size: 40px 40px, 50px 50px;
+            min-height: 100vh;
+            color: #3E2C1F;
+            overflow-x: hidden;
+        }
+
+        /* 柔和的主容器 */
+        .app-wrapper {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 头部区域 - 温暖细腻 */
+        .hero-section {
+            margin-bottom: 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            padding: 0 0.5rem;
+        }
+        .title-block h1 {
+            font-size: 2.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #C47B3E, #A45D2E, #7A431D);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.02em;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .title-block h1 i {
+            background: none;
+            color: #B57242;
+            -webkit-background-clip: unset;
+        }
+        .title-block p {
+            color: #8B6B48;
+            margin-top: 8px;
+            font-weight: 400;
+            font-size: 0.95rem;
+        }
+        .spec-badge {
+            background: #F5EDE2;
+            border-radius: 100px;
+            padding: 8px 20px;
+            border: 1px solid #E4D5C2;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #8B5A2E;
+        }
+        .spec-badge i {
+            color: #C47B3E;
+            margin-right: 6px;
+        }
+
+        /* 主网格布局 */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 28px;
+        }
+
+        /* 左侧图像卡片 - 米白温润质感 */
+        .vision-card {
+            background: rgba(255, 250, 240, 0.85);
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;
+            border: 1px solid #F0E3D4;
+            box-shadow: 0 15px 35px -12px rgba(0, 0, 0, 0.08), 0 1px 0 0 rgba(255, 255, 245, 0.8) inset;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .vision-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.12);
+            border-color: #E2CFB8;
+        }
+        .card-header {
+            padding: 1.2rem 1.8rem;
+            background: rgba(245, 235, 220, 0.6);
+            border-bottom: 1px solid #EDE0D0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .card-header h3 {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #5A3A20;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            background: #FFFFFF;
+            color: #6B4C2C;
+            border: 1px solid #E5D5C0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+        }
+        .btn-primary {
+            background: #C47B3E;
+            border: none;
+            color: white;
+            box-shadow: 0 4px 10px rgba(196, 123, 62, 0.2);
+        }
+        .btn-primary:hover {
+            background: #B0642E;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(196, 123, 62, 0.25);
+        }
+        .btn-outline {
+            background: #FFFFFF;
+            border: 1px solid #DDCBB4;
+        }
+        .btn-outline:hover {
+            background: #F9F1E8;
+            border-color: #C47B3E;
+            transform: translateY(-1px);
+        }
+        .btn-danger {
+            background: #FFF2EF;
+            border-color: #EBC5B5;
+            color: #B95C3A;
+        }
+        .btn-danger:hover {
+            background: #FFE4DC;
+            border-color: #D98157;
+        }
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #FCF7F0;
+            min-height: 520px;
+            padding: 1.8rem;
+            position: relative;
+        }
+        #imageCanvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 1.2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(196, 123, 62, 0.2);
+            background: #FEF9F2;
+            transition: 0.2s;
+        }
+        .placeholder-message {
+            position: absolute;
+            text-align: center;
+            color: #BB9C7A;
+            pointer-events: none;
+            font-size: 0.9rem;
+            background: rgba(255, 250, 240, 0.8);
+            padding: 12px 24px;
+            border-radius: 60px;
+            backdrop-filter: blur(4px);
+        }
+        .image-footer {
+            padding: 0.8rem 1.8rem;
+            background: rgba(245, 235, 220, 0.4);
+            font-size: 0.7rem;
+            color: #9C7A58;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #EDE0D0;
+        }
+
+        /* 右侧面板 暖色调卡片 */
+        .info-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .glass-card {
+            background: rgba(255, 250, 240, 0.9);
+            border-radius: 1.8rem;
+            border: 1px solid #EFE2D2;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.02), 0 1px 0 rgba(255, 255, 245, 0.6) inset;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+        .model-stats {
+            padding: 1.3rem 1.5rem;
+        }
+        .model-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1rem;
+            color: #5A3A20;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        .metric-item {
+            background: #FEF7EE;
+            border-radius: 1.2rem;
+            padding: 0.9rem 0.5rem;
+            text-align: center;
+            border: 1px solid #F0E1CE;
+        }
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #C47B3E;
+        }
+        .metric-label {
+            font-size: 0.7rem;
+            color: #8F6D48;
+            margin-top: 4px;
+        }
+        .detection-summary {
+            padding: 1.3rem 1.5rem;
+        }
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.8rem;
+        }
+        .crack-count-big {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: #BF6F3A;
+        }
+        .confidence-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            margin: 12px 0 8px;
+            color: #9F7C58;
+        }
+        .crack-list-container {
+            max-height: 360px;
+            overflow-y: auto;
+            padding: 0.2rem 0.2rem 0.2rem 0;
+        }
+        .crack-item {
+            background: #FFFBF5;
+            border-radius: 1.2rem;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-left: 4px solid #C47B3E;
+            transition: 0.1s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+        .crack-item:hover {
+            background: #FFF7ED;
+            transform: translateX(3px);
+        }
+        .crack-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .crack-type-badge {
+            background: #F0E4D6;
+            padding: 3px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #986B40;
+        }
+        .progress-bar-bg {
+            height: 5px;
+            background: #EBDBCA;
+            border-radius: 6px;
+            margin: 8px 0 5px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #C47B3E, #E09D62);
+            width: 0%;
+            border-radius: 6px;
+        }
+        .crack-location {
+            font-size: 0.65rem;
+            color: #B48A60;
+            margin-top: 5px;
+        }
+        .empty-list {
+            text-align: center;
+            padding: 40px 20px;
+            color: #BE9C78;
+        }
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F0E2D2;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #C47B3E;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 1100px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .app-wrapper {
+                padding: 1rem;
+            }
+        }
+        .toast-notify {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #FCF5EA;
+            backdrop-filter: blur(8px);
+            padding: 10px 24px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            border: 1px solid #E1CFBA;
+            z-index: 2000;
+            white-space: nowrap;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            font-weight: 500;
+            color: #7B593B;
+            pointer-events: none;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .frame-gallery {
+            display: grid;
+            width: 100%;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+            overflow-y: auto;
+            max-height: 560px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #E8DDD0;
+            border-radius: 24px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05);
+        }
+        .frame-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #E7D9C6;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s ease;
+        }
+        .frame-card:hover {
+            transform: translateY(-4px);
+        }
+        .frame-card-header {
+            padding: 10px 14px;
+            background: #F6E8D8;
+            font-size: 0.9rem;
+            color: #8D6343;
+            border-bottom: 1px solid #EAD9C8;
+        }
+        .frame-card img {
+            width: 100%;
+            display: block;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+        }
+        .frame-card-meta {
+            padding: 10px 14px 10px;
+            font-size: 0.9rem;
+            color: #7A5B41;
+        }
+        .frame-card-details {
+            padding: 0 14px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: #6B5340;
+        }
+        .result-message {
+            margin-top: 16px;
+            padding: 12px 14px;
+            border-radius: 18px;
+            background: #FFFBF3;
+            border: 1px solid #E8D9C2;
+            color: #735437;
+            font-size: 0.95rem;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+        }
+        .result-message.success {
+            background: #EEF8F3;
+            border-color: #C7E5D1;
+            color: #2E5E3D;
+        }
+        .result-message.error {
+            background: #FFF1F0;
+            border-color: #E9C0BD;
+            color: #8A3736;
+        }
+        .frame-det-item {
+            background: #FFF9F2;
+            border: 1px solid #F0E1D1;
+            border-radius: 12px;
+            padding: 8px 10px;
+        }
+        .frame-det-title {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #5D3F2B;
+        }
+        .frame-det-info {
+            display: block;
+            color: #8F6B51;
+        }
+        .frame-no-det {
+            padding: 10px 12px;
+            background: #F8F3EB;
+            border-radius: 12px;
+            color: #8D6D52;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(15px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        button:active {
+            transform: scale(0.97);
+        }
+    </style>
+</head>
+<body>
+<div class="app-wrapper">
+    <div class="hero-section">
+        <div class="title-block">
+            <h1><i class="fas fa-bridge"></i> 裂缝先知</h1>
+            <p><i class="fas fa-chart-line"></i> 道路桥梁 · 高精度裂缝识别系统 </p>
+        </div>
+        <div class="spec-badge"><i class="fas fa-microchip"></i> 模型核心 v26-crack · mAP@0.5 95.2%</div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- 左侧图像卡片 -->
+        <div class="vision-card">
+            <div class="card-header">
+                <h3><i class="fas fa-camera-retro"></i> 检测视窗</h3>
+                <div class="btn-group">
+                    <label for="fileUpload" class="btn"><i class="fas fa-cloud-upload-alt"></i> 上传图像/视频</label>
+                    <input type="file" id="fileUpload" style="display: none;" accept="image/*,video/*">
+                    <button id="exampleBtn" class="btn btn-outline"><i class="fas fa-image"></i> 示例样本</button>
+                    <button id="clearBtn" class="btn btn-danger"><i class="fas fa-trash-alt"></i> 清除</button>
+                </div>
+            </div>
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="imageCanvas" style="max-width:100%; max-height:540px; width:auto;"></canvas>
+                <video id="resultVideo" controls style="display:none; max-width:100%; max-height:540px; width:auto;"></video>
+                <div id="frameGallery" class="frame-gallery" style="display:none; padding: 16px;"></div>
+                <div id="placeholderHint" class="placeholder-message">
+                    <i class="fas fa-road" style="font-size: 1.8rem; opacity: 0.7;"></i><br>
+                    拖拽 / 点击上传图像
+                </div>
+            </div>
+            <div class="image-footer">
+                <span><i class="fas fa-draw-polygon"></i> JPG/PNG · 支持拖拽</span>
+                <span><i class="fas fa-chart-simple"></i> YOLOv26 裂缝检测引擎</span>
+            </div>
+        </div>
+
+        <!-- 右侧信息区 -->
+        <div class="info-panel">
+            <!-- 模型指标卡 -->
+            <div class="glass-card model-stats">
+                <div class="model-title">
+                    <i class="fas fa-chart-network"></i> 模型性能指标
+                    <span style="margin-left: auto; font-size:0.7rem;"><i class="fas fa-bolt"></i> 实时推理</span>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-item"><div class="metric-value">26.7M</div><div class="metric-label">参数规模</div></div>
+                    <div class="metric-item"><div class="metric-value">95.2%</div><div class="metric-label">mAP50</div></div>
+                    <div class="metric-item"><div class="metric-value">11ms</div><div class="metric-label">TensorRT 延迟</div></div>
+                    <div class="metric-item"><div class="metric-value">7类</div><div class="metric-label">裂缝细分</div></div>
+                </div>
+                <div style="margin-top: 14px; font-size:0.7rem; background:#F9F0E4; border-radius: 30px; padding: 8px 12px; text-align:center; color:#9E7A58;">
+                    <i class="fas fa-plug"></i> 模型API接口已预留 · 无缝接入自有权重
+                </div>
+            </div>
+
+            <!-- 检测统计 + 主控 -->
+            <div class="glass-card detection-summary">
+                <div class="summary-header">
+                    <span><i class="fas fa-chart-simple"></i> 实时检测快报</span>
+                    <span id="crackTotalBadge" class="spec-badge" style="padding: 4px 14px;">0 处裂缝</span>
+                </div>
+                <div>
+                    <span class="crack-count-big" id="totalCracksNum">0</span>
+                    <span style="font-size:0.9rem;"> 结构性损伤点</span>
+                </div>
+                <div class="confidence-stats">
+                    <span><i class="fas fa-arrow-up"></i> 最高置信度: <strong id="maxConfidenceSpan">--</strong></span>
+                    <span><i class="fas fa-chart-line"></i> 平均置信度: <strong id="avgConfidenceSpan">--</strong></span>
+                </div>
+                <div style="margin-top: 18px;">
+                    <button id="detectActionBtn" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;"><i class="fas fa-microscope"></i> YOLOv26 裂缝检测</button>
+                </div>
+                <div id="resultMessage" class="result-message">视频或图像检测结果将在此显示</div>
+            </div>
+
+            <!-- 裂缝明细列表 -->
+            <div class="glass-card" style="padding: 1rem 1.2rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+                    <span><i class="fas fa-list-ul"></i> 裂缝定位详情</span>
+                    <span style="font-size:0.7rem; color:#B2906C;"><i class="fas fa-chart-simple"></i> 按置信度排序</span>
+                </div>
+                <div id="crackListPanel" class="crack-list-container">
+                    <div class="empty-list"><i class="fas fa-draw-polygon"></i> 执行检测后显示结果</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('imageCanvas');
+    const ctx = canvas.getContext('2d');
+    const resultVideo = document.getElementById('resultVideo');
+    const fileInput = document.getElementById('fileUpload');
+    const exampleBtn = document.getElementById('exampleBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const detectBtn = document.getElementById('detectActionBtn');
+    const crackListDiv = document.getElementById('crackListPanel');
+    const totalCracksSpan = document.getElementById('totalCracksNum');
+    const crackTotalBadge = document.getElementById('crackTotalBadge');
+    const maxConfidenceSpan = document.getElementById('maxConfidenceSpan');
+    const avgConfidenceSpan = document.getElementById('avgConfidenceSpan');
+    const placeholderHint = document.getElementById('placeholderHint');
+    const frameGallery = document.getElementById('frameGallery');
+    const resultMessage = document.getElementById('resultMessage');
+
+    const CRACK_TYPES = ["纵向裂缝", "横向裂缝", "龟裂(网状)", "边缘裂缝", "反射裂缝", "块状裂缝", "斜向裂缝"];
+
+    let currentImage = null;
+    let originalW = 0, originalH = 0;
+    let currentDetections = [];
+    let selectedFile = null;
+    let currentResultType = 'image';
+    let currentVideoObjectUrl = null;
+
+    function showToast(msg) {
+        const existing = document.querySelector('.toast-notify');
+        if (existing) existing.remove();
+        let toast = document.createElement('div');
+        toast.className = 'toast-notify';
+        toast.innerHTML = `<i class="fas fa-bell"></i> ${msg}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2200);
+    }
+
+    function showResultMessage(msg, type = 'success') {
+        if (!resultMessage) return;
+        resultMessage.innerText = msg;
+        resultMessage.classList.remove('success', 'error');
+        resultMessage.classList.add(type);
+    }
+
+    function redrawCanvas() {
+        if (!currentImage) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            placeholderHint.style.display = 'block';
+            resultVideo.style.display = 'none';
+            return;
+        }
+        placeholderHint.style.display = 'none';
+        const container = document.getElementById('canvasContainer');
+        const maxW = container.clientWidth - 40;
+        const maxH = 500;
+        let drawW = currentImage.width;
+        let drawH = currentImage.height;
+        let ratio = 1;
+        if (drawW > maxW) {
+            ratio = maxW / drawW;
+            drawW = maxW;
+            drawH = currentImage.height * ratio;
+        }
+        if (drawH > maxH) {
+            ratio = maxH / drawH;
+            drawH = maxH;
+            drawW = currentImage.width * ratio;
+        }
+        canvas.width = drawW;
+        canvas.height = drawH;
+        ctx.clearRect(0, 0, drawW, drawH);
+        ctx.drawImage(currentImage, 0, 0, drawW, drawH);
+    }
+
+    function resetResultVideo() {
+        if (currentVideoObjectUrl) {
+            URL.revokeObjectURL(currentVideoObjectUrl);
+            currentVideoObjectUrl = null;
+        }
+        resultVideo.src = '';
+        resultVideo.style.display = 'none';
+    }
+
+    function resetFrameGallery() {
+        frameGallery.innerHTML = '';
+        frameGallery.style.display = 'none';
+    }
+
+    function base64ToBlob(base64, mimeType) {
+        const bytes = atob(base64);
+        const len = bytes.length;
+        const buf = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            buf[i] = bytes.charCodeAt(i);
+        }
+        return new Blob([buf], { type: mimeType });
+    }
+
+    function getFileExtension(filename) {
+        if (!filename) return '';
+        const parts = filename.split('.');
+        return parts.length > 1 ? parts.pop().toLowerCase() : '';
+    }
+
+    function isVideoFileType(file) {
+        const extension = getFileExtension(file.name);
+        return file.type.startsWith('video/') || ['mp4', 'avi', 'mov', 'mkv', 'webm', 'flv', 'wmv', 'mpg', 'mpeg', 'm4v'].includes(extension);
+    }
+
+    function isImageFileType(file) {
+        const extension = getFileExtension(file.name);
+        return file.type.startsWith('image/') || ['jpg', 'jpeg', 'png', 'bmp', 'webp', 'tiff', 'tif'].includes(extension);
+    }
+
+    function renderFrameGallery(frames) {
+        resetResultVideo();
+        resetFrameGallery();
+        if (!frames || !frames.length) {
+            return;
+        }
+        frameGallery.style.display = 'grid';
+        frameGallery.style.width = '100%';
+        canvas.style.display = 'none';
+        placeholderHint.style.display = 'none';
+        resultVideo.style.display = 'none';
+        frameGallery.innerHTML = frames.map(frame => {
+            const detailHtml = frame.detections.length ? frame.detections.map((det, idx) => {
+                const typeName = CRACK_TYPES[det.class] || `裂缝${det.class}`;
+                return `
+                    <div class="frame-det-item">
+                        <span class="frame-det-title">#${idx + 1} ${typeName}</span>
+                        <span class="frame-det-info">置信度 ${(det.confidence * 100).toFixed(1)}% · ${Math.round(det.bbox[2] - det.bbox[0])}x${Math.round(det.bbox[3] - det.bbox[1])}</span>
+                    </div>
+                `;
+            }).join('') : '<div class="frame-no-det">本帧未检测到目标</div>';
+
+            return `
+                <div class="frame-card">
+                    <div class="frame-card-header">帧 ${frame.frame + 1}</div>
+                    <img src="data:image/png;base64,${frame.image}" alt="Frame ${frame.frame + 1}" />
+                    <div class="frame-card-meta">检测 ${frame.detections.length} 处</div>
+                    <div class="frame-card-details">${detailHtml}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function updateSidebar() {
+        if (!currentDetections.length) {
+            crackListDiv.innerHTML = `<div class="empty-list"><i class="fas fa-magnifying-glass-chart"></i> 暂无检测结果<br>点击「裂缝检测」启动AI分析</div>`;
+            totalCracksSpan.innerText = '0';
+            crackTotalBadge.innerText = '0 处裂缝';
+            maxConfidenceSpan.innerText = '--';
+            avgConfidenceSpan.innerText = '--';
+            return;
+        }
+
+        totalCracksSpan.innerText = currentDetections.length;
+        crackTotalBadge.innerText = `${currentDetections.length} 处裂缝`;
+        const confs = currentDetections.map(d => d.confidence);
+        const maxC = Math.max(...confs);
+        const avgC = confs.reduce((a, b) => a + b, 0) / confs.length;
+        maxConfidenceSpan.innerText = `${(maxC * 100).toFixed(1)}%`;
+        avgConfidenceSpan.innerText = `${(avgC * 100).toFixed(1)}%`;
+
+        let html = '';
+        currentDetections.forEach((det, idx) => {
+            const percent = (det.confidence * 100).toFixed(1);
+            html += `
+                <div class="crack-item">
+                    <div class="crack-header">
+                        <span><i class="fas fa-crack"></i> 裂缝 #${idx + 1}</span>
+                        <span class="crack-type-badge">${det.type || '裂缝'} </span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>置信度</span>
+                        <span style="font-weight:600;">${percent}%</span>
+                    </div>
+                    <div class="progress-bar-bg"><div class="progress-fill" style="width: ${percent}%;"></div></div>
+                    <div class="crack-location"><i class="fas fa-location-dot"></i> 坐标(${Math.round(det.x)},${Math.round(det.y)}) · 尺寸 ${Math.round(det.w)}x${Math.round(det.h)}px</div>
+                </div>
+            `;
+        });
+        crackListDiv.innerHTML = html;
+    }
+
+    function clearDetection() {
+        currentDetections = [];
+        selectedFile = null;
+        currentImage = null;
+        currentResultType = 'image';
+        originalW = 0; originalH = 0;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        resetResultVideo();
+        resetFrameGallery();
+        canvas.style.display = 'block';
+        placeholderHint.style.display = 'block';
+        fileInput.value = '';
+        resultMessage.innerText = '视频或图像检测结果将在此显示';
+        resultMessage.classList.remove('error', 'success');
+        updateSidebar();
+        showToast("已清除检测标注");
+    }
+
+    async function performDetection() {
+        if (!selectedFile) {
+            showToast("请先上传道路/桥梁图像");
+            return;
+        }
+
+        detectBtn.disabled = true;
+        const originalHtml = detectBtn.innerHTML;
+        detectBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> YOLOv26 深度推理中 ...';
+
+        try {
+            const formData = new FormData();
+            formData.append('file', selectedFile, selectedFile.name || 'upload.png');
+            const response = await fetch('/api/detect', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || '检测失败');
+            }
+
+            currentDetections = (data.detections || []).map(det => {
+                const [x1, y1, x2, y2] = det.bbox;
+                const typeName = CRACK_TYPES[det.class] || `裂缝${det.class}`;
+                return {
+                    x: x1,
+                    y: y1,
+                    w: x2 - x1,
+                    h: y2 - y1,
+                    confidence: det.confidence,
+                    type: typeName
+                };
+            });
+
+            const frames = data.frames || [];
+            if (frames.length) {
+                resetResultVideo();
+                resetFrameGallery();
+                currentDetections = frames.flatMap(frame => frame.detections.map(det => {
+                    const [x1, y1, x2, y2] = det.bbox;
+                    const typeName = CRACK_TYPES[det.class] || `裂缝${det.class}`;
+                    return {
+                        frame: frame.frame,
+                        x: x1,
+                        y: y1,
+                        w: x2 - x1,
+                        h: y2 - y1,
+                        confidence: det.confidence,
+                        type: typeName
+                    };
+                }));
+                renderFrameGallery(frames);
+                canvas.style.display = 'none';
+                placeholderHint.style.display = 'none';
+                updateSidebar();
+                const totalFrames = data.video_total_frames || frames.length;
+                const returnedFrames = data.video_returned_frames || frames.length;
+                if (totalFrames > returnedFrames) {
+                    showResultMessage(`视频检测完成，共 ${totalFrames} 帧，已显示 ${returnedFrames} 帧结果`);
+                } else {
+                    showResultMessage(`视频检测完成，共 ${returnedFrames} 帧结果已显示`);
+                }
+                showToast(`✓ 视频帧检测完成，共 ${returnedFrames} 帧`);
+            } else if (data.image) {
+                resetResultVideo();
+                resetFrameGallery();
+                resultVideo.style.display = 'none';
+                resultVideo.src = '';
+                canvas.style.display = 'block';
+                const resultImage = new Image();
+                resultImage.onload = () => {
+                    currentImage = resultImage;
+                    originalW = resultImage.width;
+                    originalH = resultImage.height;
+                    redrawCanvas();
+                    updateSidebar();
+                };
+                resultImage.src = `data:image/png;base64,${data.image}`;
+                showResultMessage(`图像检测完成，识别到 ${currentDetections.length} 处结构裂缝`);
+                showToast(`✓ 检测完成，识别到 ${currentDetections.length} 处结构裂缝`);
+            } else {
+                resetResultVideo();
+                resetFrameGallery();
+                canvas.style.display = 'block';
+                resultVideo.style.display = 'none';
+                resultVideo.src = '';
+                placeholderHint.style.display = 'block';
+                showResultMessage('检测完成，但未返回任何有效结果', 'error');
+                showToast('检测结果为空');
+            }
+        } catch (e) {
+            console.error(e);
+            showResultMessage('推理失败，请检查模型服务', 'error');
+            showToast("推理失败，请检查模型服务");
+        } finally {
+            detectBtn.disabled = false;
+            detectBtn.innerHTML = originalHtml;
+        }
+    }
+
+    function loadImageFromFile(file) {
+        if (!file) {
+            showResultMessage('请选择图像或视频文件', 'error');
+            return showToast("请选择图像或视频文件");
+        }
+        if (!isImageFileType(file) && !isVideoFileType(file)) {
+            showResultMessage('请上传图片或视频文件', 'error');
+            return showToast("请上传图片或视频文件");
+        }
+
+        selectedFile = file;
+        currentDetections = [];
+        currentResultType = isVideoFileType(file) ? 'video' : 'image';
+        resetResultVideo();
+        resetFrameGallery();
+        canvas.style.display = 'block';
+        placeholderHint.style.display = 'block';
+        showResultMessage('已选择文件，点击检测开始推理');
+
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    currentImage = img;
+                    originalW = img.width;
+                    originalH = img.height;
+                    redrawCanvas();
+                    updateSidebar();
+                    showToast("图像载入成功，可执行YOLOv26检测");
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            currentImage = null;
+            resetResultVideo();
+            const videoUrl = URL.createObjectURL(file);
+            currentVideoObjectUrl = videoUrl;
+            resultVideo.src = videoUrl;
+            resultVideo.style.display = 'block';
+            resultVideo.load();
+            canvas.style.display = 'none';
+            placeholderHint.style.display = 'none';
+            updateSidebar();
+            showToast("视频预览已加载，可执行YOLOv26检测");
+        }
+    }
+
+    function loadExampleImage() {
+        const off = document.createElement('canvas');
+        const w = 1280, h = 720;
+        off.width = w; off.height = h;
+        const octx = off.getContext('2d');
+        octx.fillStyle = '#F5E9DD';
+        octx.fillRect(0,0,w,h);
+        for(let i=0;i<2200;i++) {
+            octx.fillStyle = `rgba(180, 140, 100, ${Math.random()*0.2})`;
+            octx.fillRect(Math.random()*w, Math.random()*h, 2,2);
+        }
+        octx.beginPath();
+        octx.strokeStyle = '#E0BC8A';
+        octx.lineWidth = 8;
+        octx.setLineDash([30,40]);
+        octx.moveTo(w*0.1, h*0.68);
+        octx.lineTo(w*0.9, h*0.68);
+        octx.stroke();
+        octx.setLineDash([]);
+        octx.beginPath();
+        octx.strokeStyle = '#8F6D48';
+        octx.lineWidth = 5;
+        octx.moveTo(w*0.2, h*0.44);
+        octx.quadraticCurveTo(w*0.28, h*0.52, w*0.22, h*0.62);
+        octx.stroke();
+        octx.beginPath();
+        octx.moveTo(w*0.68, h*0.31);
+        octx.quadraticCurveTo(w*0.76, h*0.4, w*0.7, h*0.51);
+        octx.stroke();
+        octx.font = "bold 20px 'Inter'";
+        octx.fillStyle = "#7B5B3E";
+        octx.fillText("混凝土桥梁 · 裂缝检测示例", 40, 70);
+        off.toBlob(blob => {
+            if (!blob) return;
+            const file = new File([blob], 'example.png', { type: 'image/png' });
+            selectedFile = file;
+            const img = new Image();
+            img.onload = () => {
+                currentImage = img;
+                originalW = img.width;
+                originalH = img.height;
+                currentDetections = [];
+                redrawCanvas();
+                updateSidebar();
+                showToast("示例图像已载入 (含裂纹特征)");
+            };
+            img.src = URL.createObjectURL(blob);
+        });
+    }
+
+    fileInput.addEventListener('change', (e) => { if (e.target.files.length) loadImageFromFile(e.target.files[0]); });
+    exampleBtn.addEventListener('click', loadExampleImage);
+    clearBtn.addEventListener('click', clearDetection);
+    detectBtn.addEventListener('click', performDetection);
+
+    const dropZone = document.querySelector('.canvas-container');
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.border = '2px dashed #C47B3E'; });
+    dropZone.addEventListener('dragleave', () => { dropZone.style.border = 'none'; });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.border = 'none';
+        const file = e.dataTransfer.files[0];
+        if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
+            loadImageFromFile(file);
+        } else {
+            showToast("请拖拽图像或视频文件");
+        }
+    });
+
+    setTimeout(() => loadExampleImage(), 200);
+</script>
+</body>
+</html>
